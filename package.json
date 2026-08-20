@@ -1,0 +1,17 @@
+{
+  "name": "export-to-cytoscape",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "export-cytoscape.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cytoscape": "^3.34.1",
+    "cytoscape-dagre": "^4.0.0",
+    "sqlite3": "^6.0.1"
+  }
+}
