@@ -43,14 +43,26 @@
         #cy-wrapper { flex-grow: 1; height: 100%; position: relative; }
         #cy { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #status-overlay { position: absolute; top: 15px; left: 15px; background: rgba(17, 17, 27, 0.9); padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border-color); z-index: 100; font-size: 13px; color: #a6e3a1; pointer-events: none; }
+        #dropzone { position: absolute; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: var(--bg-color); text-align: center; }
+        #dropzone.dragover .dropzone-inner { border-color: var(--accent-color); color: var(--text-color); }
+        .dropzone-inner { border: 2px dashed var(--border-color); border-radius: 12px; padding: 48px 64px; color: #a6adc8; pointer-events: none; }
+        .dropzone-title { font-size: 1.1rem; margin-bottom: 8px; color: var(--text-color); }
+        .dropzone-sub { font-size: 0.85rem; color: #6c7086; }
     </style>
 </head>
 <body>
     <div id="sidebar">
         <h3>CodeGraph Explorer</h3>
         <div class="stats-box">
+            <div><strong>Loaded:</strong> <span id="loaded-name">— nothing yet —</span></div>
             <div><strong>Active Nodes:</strong> <span id="n-count">0</span></div>
             <div><strong>Active Edges:</strong> <span id="e-count">0</span></div>
+        </div>
+
+        <div class="control-group">
+            <label>Graph Source</label>
+            <input type="file" id="file-input" accept=".json,application/json" style="display:none;">
+            <button id="btn-load">Load Graph File</button>
         </div>
 
         <div class="control-group">
@@ -123,6 +135,12 @@
     </div>
     <div id="cy-wrapper">
         <div id="status-overlay">Initializing Engine...</div>
+        <div id="dropzone">
+            <div class="dropzone-inner">
+                <div class="dropzone-title">Drop an exported Cytoscape JSON here</div>
+                <div class="dropzone-sub">or use "Load Graph File" in the sidebar</div>
+            </div>
+        </div>
         <div id="cy"></div>
     </div>
     <script src="app-visualizer.js"></script>
