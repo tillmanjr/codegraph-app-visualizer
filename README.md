@@ -65,6 +65,8 @@ cp node_modules/cytoscape-dagre/dist/cytoscape-dagre.min.js ./cytoscape-dagre.js
    uses the browser's `FileReader` (not `fetch`), the page also works when opened as a `file://`
    URL, though serving over HTTP works fine too.
 
+   ![The explorer on first open: an empty canvas showing a dashed dropzone that reads "Drop an exported Cytoscape JSON here", with a Load Graph File button in the sidebar and zeroed node/edge counts](docs/images/empty-state.png)
+
 ## What the exporter does
 
 Reads two tables and flattens them into Cytoscape's element format:
@@ -81,6 +83,10 @@ Two sanitization rules, because raw indices contain junk that makes Cytoscape th
 
 ## The explorer UI
 
+- **Load Graph File / drag-and-drop** — the page opens empty; load an exported `cytoscape-graph.json`
+  by dropping it anywhere on the page or clicking **Load Graph File**. Drop another file at any time
+  to swap graphs. The active file name shows next to **Loaded** in the stats box. Invalid files (not
+  JSON, or missing `nodes`/`edges`) are rejected without replacing the current graph.
 - **Show Variables & Constants** — toggle off to hide `variable`/`constant` nodes, which usually
   dominate the node count.
 - **Path Omission Exclusions** — add substrings (e.g. `test`, `mock`, `vendor`); any node whose
