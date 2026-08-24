@@ -38,19 +38,34 @@
         .exclusion-list { max-height: 110px; overflow-y: auto; border: 1px solid var(--border-color); background: #11111b; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
         .exclusion-tag { display: flex; justify-content: space-between; align-items: center; background: #313244; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
         .remove-btn { color: #f38ba8; cursor: pointer; font-weight: bold; padding-left: 6px; font-size: 0.85rem; }
+        .legend { display: flex; flex-direction: column; gap: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .legend-color { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
         .info-panel { background-color: #11111b; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem; word-break: break-all; min-height: 80px; line-height: 1.5; }
         #layout-warning { background-color: #f38ba8; color: #11111b; padding: 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: none; line-height: 1.4; text-align: center; }
         #cy-wrapper { flex-grow: 1; height: 100%; position: relative; }
         #cy { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         #status-overlay { position: absolute; top: 15px; left: 15px; background: rgba(17, 17, 27, 0.9); padding: 10px 15px; border-radius: 6px; border: 1px solid var(--border-color); z-index: 100; font-size: 13px; color: #a6e3a1; pointer-events: none; }
+        #dropzone { position: absolute; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: var(--bg-color); text-align: center; }
+        #dropzone.dragover .dropzone-inner { border-color: var(--accent-color); color: var(--text-color); }
+        .dropzone-inner { border: 2px dashed var(--border-color); border-radius: 12px; padding: 48px 64px; color: #a6adc8; pointer-events: none; }
+        .dropzone-title { font-size: 1.1rem; margin-bottom: 8px; color: var(--text-color); }
+        .dropzone-sub { font-size: 0.85rem; color: #6c7086; }
     </style>
 </head>
 <body>
     <div id="sidebar">
         <h3>CodeGraph Explorer</h3>
         <div class="stats-box">
+            <div><strong>Loaded:</strong> <span id="loaded-name">— nothing yet —</span></div>
             <div><strong>Active Nodes:</strong> <span id="n-count">0</span></div>
             <div><strong>Active Edges:</strong> <span id="e-count">0</span></div>
+        </div>
+
+        <div class="control-group">
+            <label>Graph Source</label>
+            <input type="file" id="file-input" accept=".json,application/json" style="display:none;">
+            <button id="btn-load">Load Graph File</button>
         </div>
 
         <div class="control-group">
@@ -123,6 +138,12 @@
     </div>
     <div id="cy-wrapper">
         <div id="status-overlay">Initializing Engine...</div>
+        <div id="dropzone">
+            <div class="dropzone-inner">
+                <div class="dropzone-title">Drop an exported Cytoscape JSON here</div>
+                <div class="dropzone-sub">or use "Load Graph File" in the sidebar</div>
+            </div>
+        </div>
         <div id="cy"></div>
     </div>
     <script src="app-visualizer.js"></script>

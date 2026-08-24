@@ -7,8 +7,8 @@ Two pieces:
 
 - `export-cytoscape.js` — Node script. Reads `import/codegraph.db` (read-only) and writes
   `cytoscape-graph.json`.
-- `index.html` + `app-visualizer.js` — static page that fetches that JSON and renders it with
-  Cytoscape.js.
+- `index.html` + `app-visualizer.js` — browser UI that loads and renders user-provided
+  `cytoscape-graph.json` files with Cytoscape.js.
 
 ![The explorer with a graph loaded: sidebar controls on the left, dagre layout on the right](docs/images/explorer-overview.png)
 
@@ -59,8 +59,11 @@ cp node_modules/cytoscape-dagre/dist/cytoscape-dagre.min.js ./cytoscape-dagre.js
    npx serve .
    ```
 
-   Open the printed URL (usually <http://localhost:3000>). The page must be served over HTTP —
-   opening `index.html` as a `file://` URL fails, because the JSON is loaded with `fetch`.
+   Open the printed URL (usually <http://localhost:3000>). The page opens empty. Load a graph by
+   dragging an exported `cytoscape-graph.json` onto the page, or click **Load Graph File** in the
+   sidebar and pick one. You can drop a different file at any time to swap graphs. Because loading
+   uses the browser's `FileReader` (not `fetch`), the page also works when opened as a `file://`
+   URL, though serving over HTTP works fine too.
 
 ## What the exporter does
 
