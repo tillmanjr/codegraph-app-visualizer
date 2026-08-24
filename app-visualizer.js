@@ -293,6 +293,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             fileInput.value = '';
         });
 
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (dropzone.style.display !== 'none') dropzone.classList.add('dragover');
+        });
+        document.addEventListener('dragleave', (e) => {
+            if (e.relatedTarget === null) dropzone.classList.remove('dragover');
+        });
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+                readFile(e.dataTransfer.files[0]);
+            }
+        });
+
         filterVarsCheckbox.addEventListener('change', () => renderPipeline(false));
 
         btnAddExclude.addEventListener('click', () => {
