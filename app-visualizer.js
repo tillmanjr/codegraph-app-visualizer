@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nCount = document.getElementById('n-count');
     const eCount = document.getElementById('e-count');
 
+    const btnLoad = document.getElementById('btn-load');
+    const fileInput = document.getElementById('file-input');
+    const loadedName = document.getElementById('loaded-name');
+    const dropzone = document.getElementById('dropzone');
+
     let cyInstance = null;
     let rawGraphData = null;
     let activeExclusions = [];
@@ -237,13 +242,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    try {
-        status.innerText = "Loading graph layout payload...";
-        const res = await fetch('cytoscape-graph.json');
-        rawGraphData = await res.json();
+    function showLoadError(msg) {
+        status.style.display = 'block';
+        status.style.color = '#f38ba8';
+        status.innerText = 'Load error: ' + msg;
+    }
 
+    function loadGraphData(parsed, fileName) {
+        if (!parsed || typeof parsed !== 'object' ||
+            !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) {
+            throw new Error('Not a Cytoscape graph: expected "nodes" and "edges" arrays');
+        }
+        rawGraphData = parsed;
+        activeExclusions = [];
         updateExclusionTagsUI();
+        loadedName.innerText = fileName;
+        dropzone.style.display = 'none';
+        status.style.color = '#a6e3a1';
         renderPipeline(true);
+    }
+
+    function readFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            let parsed;
+            try {
+                parsed = JSON.parse(reader.result);
+            } catch (err) {
+                showLoadError('Could not parse file as JSON');
+                return;
+            }
+            try {
+                loadGraphData(parsed, file.name);
+            } catch (err) {
+                showLoadError(err.message);
+            }
+        };
+        reader.onerror = () => showLoadError('Could not read file');
+        reader.readAsText(file);
+    }
+
+    try {
+        status.style.display = 'none';
+        updateExclusionTagsUI();
+
+        btnLoad.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            readFile(e.target.files[0]);
+            fileInput.value = '';
+        });
 
         filterVarsCheckbox.addEventListener('change', () => renderPipeline(false));
 
