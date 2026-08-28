@@ -39,6 +39,9 @@ call paths between it — "fewer tokens, fewer tool calls, 100% local" — but t
 to be exactly what you want for drawing a picture of a codebase. Without `codegraph.db` there is
 nothing here to explore.
 
+Oh, and did I mention it's fast? *Blisteringly* fast — it answers in a single round-trip what a
+file-by-file crawl needs dozens of steps to piece together, and it never leaves your machine.
+
 ## Requirements
 
 - Node.js 20+ (developed on v24)
