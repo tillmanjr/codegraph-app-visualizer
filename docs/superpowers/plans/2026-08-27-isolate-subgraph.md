@@ -33,7 +33,7 @@
 - Consumes: nothing (first task).
 - Produces: global/CommonJS `computeSubgraph(nodes, edges, anchorId, options)` where `nodes`/`edges` are Cytoscape element arrays (`{ data: { id, label, kind, filePath } }` / `{ data: { id, source, target, relationship } }`), `options` is `{ depth: number, includeParents: boolean }`, returning `{ nodes: Array, edges: Array, directions: Map<string, 'anchor'|'up'|'down'> }`. Tasks 3–5 consume this.
 
-- [ ] **Step 1: Wire up the test script**
+- [x] **Step 1: Wire up the test script**
 
 In `package.json`, replace the placeholder test script:
 
@@ -43,7 +43,7 @@ In `package.json`, replace the placeholder test script:
   },
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `subgraph.test.js`:
 
@@ -141,12 +141,12 @@ test('an anchor with no successors still gets its parents', () => {
 });
 ```
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `npm test`
 Expected: FAIL — `Cannot find module './subgraph.js'`.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 Create `subgraph.js`:
 
@@ -245,12 +245,12 @@ Create `subgraph.js`:
 })(typeof window !== 'undefined' ? window : globalThis);
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `npm test`
 Expected: PASS — 11 passing tests, 0 failing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add subgraph.js subgraph.test.js package.json
