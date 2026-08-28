@@ -944,7 +944,7 @@ This runs `node --test`, which covers the focus-mode graph traversal in
 `subgraph.js`. No test framework is installed — `node:test` ships with Node.
 ```
 
-- [ ] **Step 4: Add a screenshot (animated GIF)**
+- [x] **Step 4: Add a screenshot (animated GIF)**
 
 Record Isolate Subgraph in use — anchor plus two generations down with parents on, so all
 three border colors are visible, then a depth change and a re-anchor — and save it as
