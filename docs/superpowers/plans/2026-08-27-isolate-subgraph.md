@@ -944,14 +944,15 @@ This runs `node --test`, which covers the focus-mode graph traversal in
 `subgraph.js`. No test framework is installed — `node:test` ships with Node.
 ```
 
-- [ ] **Step 4: Add a screenshot**
+- [ ] **Step 4: Add a screenshot (animated GIF)**
 
-Capture an isolated subgraph — anchor plus two generations down with parents on, so
-all three border colors are visible — and save it as `docs/images/isolate-subgraph.png`.
-Reference it under the Isolate Subgraph bullet, following the existing caption style:
+Record Isolate Subgraph in use — anchor plus two generations down with parents on, so all
+three border colors are visible, then a depth change and a re-anchor — and save it as
+`docs/images/isolate-subgraph.gif`. See `docs/images/README.md` for framing and size
+guidance. The reference is already in place under the Isolate Subgraph bullet:
 
 ```markdown
-![A graph isolated to one anchor node: the anchor with a thick cream border, pink-bordered descendants below it connected by pink edges, and two mauve-bordered immediate parents connected by mauve edges](docs/images/isolate-subgraph.png)
+![An animated walkthrough of Isolate Subgraph: clicking a node prunes the canvas to that node's neighborhood — the anchor ringed in cream, pink-bordered descendants on pink edges, and mauve-bordered immediate parents on mauve edges — then the Focus Depth slider grows and shrinks the subgraph, and clicking a descendant re-anchors the view on it](docs/images/isolate-subgraph.gif)
 ```
 
 - [x] **Step 5: Verify**

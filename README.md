@@ -107,6 +107,8 @@ Two sanitization rules, because raw indices contain junk that makes Cytoscape th
   borders and edges: cream for the anchor, pink downstream, mauve upstream. Node fills
   keep their kind colors. Turning the toggle off restores the full filtered graph.
   If a filter or exclusion removes the current anchor, focus clears and says so.
+
+  ![An animated walkthrough of Isolate Subgraph: clicking a node prunes the canvas to that node's neighborhood — the anchor ringed in cream, pink-bordered descendants on pink edges, and mauve-bordered immediate parents on mauve edges — then the Focus Depth slider grows and shrinks the subgraph, and clicking a descendant re-anchors the view on it](docs/images/isolate-subgraph.gif)
 - **Path Omission Exclusions** — add substrings (e.g. `test`, `mock`, `vendor`); any node whose
   file path or label contains one is filtered out, along with its edges.
 - **Spacing sliders** — horizontal/vertical separation, applied as `rankSep`/`nodeSep` for dagre
