@@ -505,6 +505,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (focusMode && focusAnchorId !== null) renderPipeline(true);
         });
 
+        btnFocusBack.addEventListener('click', () => {
+            // Ancestors can disappear when filters change; skip the stale ones.
+            while (focusHistory.length > 0) {
+                const previousId = focusHistory.pop();
+                if (lastFiltered.byId.has(previousId)) {
+                    focusAnchorId = previousId;
+                    updateFocusUI();
+                    showNodeInfo(previousId);
+                    renderPipeline(true);
+                    return;
+                }
+            }
+            updateFocusUI();
+        });
+
         btnAddExclude.addEventListener('click', () => {
             const val = excludeInput.value.trim().toLowerCase();
             if (val.length > 0 && !activeExclusions.includes(val)) {

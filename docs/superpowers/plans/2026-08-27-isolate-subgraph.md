@@ -758,7 +758,7 @@ git commit -m "feat: prune canvas to the focused subgraph with direction colors"
 - Consumes: `focusHistory`, `focusAnchorId`, `updateFocusUI`, `showNodeInfo`, `lastFiltered` (Task 3).
 - Produces: nothing consumed downstream. Task 3 already pushes onto `focusHistory` inside `setAnchor`; this task is the other half — popping it.
 
-- [ ] **Step 1: Wire the Back button**
+- [x] **Step 1: Wire the Back button**
 
 Add to the event-wiring block, after the focus depth listeners:
 
@@ -788,7 +788,7 @@ itself once the stack empties. Walking three anchors deep and pressing Back thre
 retraces the path exactly. Adding a path exclusion that removes an anchor still in the history
 and then pressing Back skips that entry rather than showing an empty graph.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app-visualizer.js
