@@ -268,7 +268,7 @@ git commit -m "feat: add computeSubgraph traversal with node:test coverage"
 - Consumes: `subgraph.js` from Task 1 (script tag only).
 - Produces: DOM ids consumed by Tasks 3–5 — `focus-mode`, `focus-parents`, `focus-parents-label`, `focus-depth`, `val-focus-depth`, `btn-focus-back`, `focus-anchor-name`, `focus-legend`, `search-scope`, `search-hint`; body class `focus-active`; Cytoscape classes `focus-anchor`, `focus-up`, `focus-down`.
 
-- [ ] **Step 1: Add the script tag**
+- [x] **Step 1: Add the script tag**
 
 In `index.html`, after the `cytoscape-dagre.js` script tag in `<head>`:
 
@@ -277,7 +277,7 @@ In `index.html`, after the `cytoscape-dagre.js` script tag in `<head>`:
     <script src="subgraph.js"></script>
 ```
 
-- [ ] **Step 2: Add the stylesheet rules**
+- [x] **Step 2: Add the stylesheet rules**
 
 Append inside the existing `<style>` block, after the `.dropzone-sub` rule:
 
@@ -290,7 +290,7 @@ Append inside the existing `<style>` block, after the `.dropzone-sub` rule:
         .search-hint { font-size: 0.75rem; color: #6c7086; min-height: 1em; }
 ```
 
-- [ ] **Step 3: Add the Focus line to the stats box**
+- [x] **Step 3: Add the Focus line to the stats box**
 
 In the `.stats-box` div, after the Active Edges line:
 
@@ -299,7 +299,7 @@ In the `.stats-box` div, after the Active Edges line:
             <div><strong>Focus:</strong> <span id="focus-anchor-name">— none —</span></div>
 ```
 
-- [ ] **Step 4: Add the Focus control group**
+- [x] **Step 4: Add the Focus control group**
 
 Insert a new control group immediately after the existing "Filter Elements" group (the one containing `filter-variables`) and before "Path Omission Exclusions":
 
@@ -321,7 +321,7 @@ Insert a new control group immediately after the existing "Filter Elements" grou
         </div>
 ```
 
-- [ ] **Step 5: Add the search scope selector**
+- [x] **Step 5: Add the search scope selector**
 
 Replace the existing "Search Nodes" control group with:
 
@@ -337,7 +337,7 @@ Replace the existing "Search Nodes" control group with:
         </div>
 ```
 
-- [ ] **Step 6: Add the focus legend block**
+- [x] **Step 6: Add the focus legend block**
 
 Insert immediately after the existing "Component Legend" control group:
 
@@ -357,7 +357,7 @@ Insert immediately after the existing "Component Legend" control group:
 Run: `npx serve .` and open the printed URL.
 Expected: the sidebar shows the Focus group with Isolate Subgraph unchecked, Include Immediate Parents checked but greyed, the depth slider greyed at 2, and Back disabled. The Focus Colors legend is **not** visible. The search box has a Full Graph scope dropdown whose Current Subgraph option is disabled. No console errors — `subgraph.js` loads.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add index.html

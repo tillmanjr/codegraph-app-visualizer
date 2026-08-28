@@ -5,6 +5,7 @@
     <title>CodeGraph Dependency Explorer</title>
     <script src="cytoscape.min.js"></script>
     <script src="cytoscape-dagre.js"></script>
+    <script src="subgraph.js"></script>
     <style>
         :root {
             --bg-color: #1e1e2e;
@@ -51,6 +52,12 @@
         .dropzone-inner { border: 2px dashed var(--border-color); border-radius: 12px; padding: 48px 64px; color: #a6adc8; pointer-events: none; }
         .dropzone-title { font-size: 1.1rem; margin-bottom: 8px; color: var(--text-color); }
         .dropzone-sub { font-size: 0.85rem; color: #6c7086; }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
+        .checkbox-label input:disabled { cursor: not-allowed; }
+        .control-group.disabled label, .checkbox-label.disabled { opacity: 0.5; }
+        #focus-legend { display: none; }
+        body.focus-active #focus-legend { display: flex; }
+        .search-hint { font-size: 0.75rem; color: #6c7086; min-height: 1em; }
     </style>
 </head>
 <body>
@@ -60,6 +67,7 @@
             <div><strong>Loaded:</strong> <span id="loaded-name">— nothing yet —</span></div>
             <div><strong>Active Nodes:</strong> <span id="n-count">0</span></div>
             <div><strong>Active Edges:</strong> <span id="e-count">0</span></div>
+            <div><strong>Focus:</strong> <span id="focus-anchor-name">— none —</span></div>
         </div>
 
         <div class="control-group">
@@ -73,6 +81,22 @@
             <label class="checkbox-label">
                 <input type="checkbox" id="filter-variables" checked> Show Variables & Constants
             </label>
+        </div>
+
+        <div class="control-group">
+            <label>Focus</label>
+            <label class="checkbox-label">
+                <input type="checkbox" id="focus-mode"> Isolate Subgraph
+            </label>
+            <label class="checkbox-label disabled" id="focus-parents-label">
+                <input type="checkbox" id="focus-parents" checked disabled> Include Immediate Parents
+            </label>
+            <div class="slider-row" style="margin-top: 5px;">
+                <span>Focus Depth:</span>
+                <span id="val-focus-depth">2</span>
+            </div>
+            <input type="range" id="focus-depth" min="1" max="6" value="2" disabled>
+            <button id="btn-focus-back" class="btn-secondary" style="margin-top: 4px;" disabled>← Back</button>
         </div>
 
         <div class="control-group">
@@ -103,6 +127,11 @@
         <div class="control-group">
             <label>Search Nodes</label>
             <input type="text" id="search-input" placeholder="Type module or function name...">
+            <select id="search-scope">
+                <option value="full">Full Graph</option>
+                <option value="subgraph" disabled>Current Subgraph</option>
+            </select>
+            <div id="search-hint" class="search-hint"></div>
         </div>
 
         <div class="control-group">
@@ -128,6 +157,15 @@
                 <div class="legend-item"><div class="legend-color" style="background: #89b4fa;"></div> File / Module</div>
                 <div class="legend-item"><div class="legend-color" style="background: #f9e2af;"></div> Variable / Constant</div>
                 <div class="legend-item"><div class="legend-color" style="background: #94e2d5;"></div> Generic Block</div>
+            </div>
+        </div>
+
+        <div class="control-group" id="focus-legend">
+            <label>Focus Colors</label>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color" style="background: #f5e0dc;"></div> Anchor</div>
+                <div class="legend-item"><div class="legend-color" style="background: #f38ba8;"></div> Downstream (calls)</div>
+                <div class="legend-item"><div class="legend-color" style="background: #cba6f7;"></div> Upstream (parents)</div>
             </div>
         </div>
 
