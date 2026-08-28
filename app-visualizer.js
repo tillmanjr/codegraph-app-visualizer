@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             // so node fills keep their kind colors.
                             { selector: 'node.focus-down', style: { 'border-width': 3, 'border-color': '#f38ba8' } },
                             { selector: 'node.focus-up', style: { 'border-width': 3, 'border-color': '#cba6f7' } },
-                            { selector: 'node.focus-anchor', style: { 'border-width': 5, 'border-color': '#f5e0dc' } },
+                            { selector: 'node.focus-anchor', style: { 'border-width': 4, 'border-color': '#f5e0dc', 'outline-width': 4, 'outline-color': '#f5e0dc', 'outline-opacity': 0.5, 'outline-offset': 3, 'z-index': 10 } },
                             { selector: 'edge.focus-down', style: { 'line-color': '#f38ba8', 'target-arrow-color': '#f38ba8', 'width': 3 } },
                             { selector: 'edge.focus-up', style: { 'line-color': '#cba6f7', 'target-arrow-color': '#cba6f7', 'width': 3 } }
                         ],
