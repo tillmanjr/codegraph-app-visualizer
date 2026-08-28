@@ -806,7 +806,7 @@ git commit -m "feat: step back through the anchor history"
 - Consumes: `setAnchor`, `showNodeInfo`, `applyGenerationHighlight`, `lastClickedNodeId`, `lastFiltered`, `focusMode` (Task 3); `search-scope` / `search-hint` (Task 2).
 - Produces: nothing consumed downstream.
 
-- [ ] **Step 1: Replace the search listener**
+- [x] **Step 1: Replace the search listener**
 
 Replace the existing `searchInput.addEventListener('input', ...)` block with:
 
@@ -877,7 +877,7 @@ Replace the existing `searchInput.addEventListener('input', ...)` block with:
 Run: `npx serve .`, load a graph, enable Isolate and anchor on a node.
 Expected: with scope **Full Graph**, typing shows "N matches — Enter to focus" and does not change the view; pressing Enter anchors on the first match and pushes history. Switching scope to **Current Subgraph** (now enabled) and typing centers on a match inside the subgraph without re-anchoring, and reports "No matches" for a name outside it. With Isolate off, search behaves as it always has — centering and highlighting per keystroke — and the Current Subgraph option is disabled.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app-visualizer.js

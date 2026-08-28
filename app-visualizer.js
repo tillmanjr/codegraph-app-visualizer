@@ -567,18 +567,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        function centerOnCyNode(node) {
+            cyInstance.animate({ center: { eles: node } }, { duration: 300 });
+            showNodeInfo(node.id());
+            lastClickedNodeId = node.id();
+        }
+
         searchInput.addEventListener('input', (e) => {
             if (!cyInstance) return;
             const query = e.target.value.toLowerCase().trim();
-            cyInstance.elements().removeClass('faded gen-1 gen-2');
+            searchHint.innerText = '';
 
-            if (query.length > 1) {
-                const matches = cyInstance.nodes().filter(node => node.data('label').toLowerCase().includes(query));
-                if (matches.length > 0) {
-                    cyInstance.animate({ center: { eles: matches.first() } }, { duration: 300 });
-                    matches.first().trigger('tap');
-                }
+            if (!focusMode) {
+                cyInstance.elements().removeClass('faded gen-1 gen-2');
             }
+            if (query.length <= 1) return;
+
+            // Isolated + Full Graph scope: typing must not re-anchor, or every
+            // keystroke would push history and re-run a layout. Enter commits.
+            if (focusMode && searchScopeSelect.value === 'full') {
+                const matches = lastFiltered.nodes.filter(node =>
+                    (node.data.label || '').toLowerCase().includes(query));
+                searchHint.innerText = matches.length === 0
+                    ? 'No matches'
+                    : matches.length + ' match' + (matches.length === 1 ? '' : 'es') + ' — Enter to focus';
+                return;
+            }
+
+            // Otherwise search whatever is on the canvas: the full filtered graph
+            // when isolate is off, the subgraph when scope is Current Subgraph.
+            const matches = cyInstance.nodes().filter(node =>
+                node.data('label').toLowerCase().includes(query));
+            if (matches.length === 0) {
+                searchHint.innerText = 'No matches';
+                return;
+            }
+            const first = matches.first();
+            centerOnCyNode(first);
+            if (!focusMode) applyGenerationHighlight(first);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            if (!focusMode || searchScopeSelect.value !== 'full') return;
+            const query = searchInput.value.toLowerCase().trim();
+            if (query.length <= 1) return;
+
+            const match = lastFiltered.nodes.find(node =>
+                (node.data.label || '').toLowerCase().includes(query));
+            if (!match) return;
+            lastClickedNodeId = match.data.id;
+            showNodeInfo(match.data.id);
+            setAnchor(match.data.id, true);
+            searchHint.innerText = '';
+        });
+
+        searchScopeSelect.addEventListener('change', () => {
+            searchHint.innerText = '';
+            searchInput.dispatchEvent(new Event('input'));
         });
 
     } catch (e) {
