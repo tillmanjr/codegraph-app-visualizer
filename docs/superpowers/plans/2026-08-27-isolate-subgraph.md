@@ -377,7 +377,7 @@ git commit -m "feat: add focus mode controls, search scope, and focus legend mar
 
 This task carries the whole click path, not just the state: without the tap handler rewrite there is no way to set an anchor, so a smaller Task 3 would have nothing testable at its end.
 
-- [ ] **Step 1: Add the element lookups and state**
+- [x] **Step 1: Add the element lookups and state**
 
 In `app-visualizer.js`, after the existing `const dropzone = ...` lookup, add:
 
@@ -410,7 +410,7 @@ Then extend the state block that currently reads `let cyInstance = null; let raw
     let lastFiltered = { nodes: [], edges: [], successors: new Map(), predecessors: new Map(), byId: new Map() };
 ```
 
-- [ ] **Step 2: Add the focus helper functions**
+- [x] **Step 2: Add the focus helper functions**
 
 Insert these after `updateExclusionTagsUI()` and before `renderPipeline`:
 
@@ -525,7 +525,7 @@ Insert these after `updateExclusionTagsUI()` and before `renderPipeline`:
     }
 ```
 
-- [ ] **Step 3: Cache the filtered graph inside `renderPipeline`**
+- [x] **Step 3: Cache the filtered graph inside `renderPipeline`**
 
 In `renderPipeline`, immediately after `const filteredEdges = rawGraphData.edges.filter(...)`, add:
 
@@ -542,7 +542,7 @@ In `renderPipeline`, immediately after `const filteredEdges = rawGraphData.edges
                 });
 ```
 
-- [ ] **Step 4: Add the isolate stage**
+- [x] **Step 4: Add the isolate stage**
 
 Directly after the block from Step 3, and **before** the `nCount.innerText = ...` lines, add:
 
@@ -572,7 +572,7 @@ Directly after the block from Step 3, and **before** the `nCount.innerText = ...
                 }
 ```
 
-- [ ] **Step 5: Point the rest of the pipeline at the view arrays**
+- [x] **Step 5: Point the rest of the pipeline at the view arrays**
 
 Inside `renderPipeline`, replace every remaining use of `filteredNodes` / `filteredEdges` with `viewNodes` / `viewEdges`. Those uses are:
 
@@ -605,7 +605,7 @@ and in the update branch:
                     cyInstance.json({ elements: [...viewNodes, ...viewEdges] });
 ```
 
-- [ ] **Step 6: Apply the direction classes and surface the cleared-focus message**
+- [x] **Step 6: Apply the direction classes and surface the cleared-focus message**
 
 In `renderPipeline`, immediately after the `if (!cyInstance) { ... } else { ... }` block closes and before `cyInstance.one('layoutstop', ...)`, add:
 
@@ -631,7 +631,7 @@ existing callback unconditionally hides the status overlay, which would swallow 
                 });
 ```
 
-- [ ] **Step 7: Rewrite the tap handler**
+- [x] **Step 7: Rewrite the tap handler**
 
 Replace the whole `cyInstance.on('tap', (evt) => { ... });` registration — its info-panel
 and highlight bodies moved into the helpers added in Step 2 — with:
@@ -662,7 +662,7 @@ and highlight bodies moved into the helpers added in Step 2 — with:
                     });
 ```
 
-- [ ] **Step 8: Add the Cytoscape style rules**
+- [x] **Step 8: Add the Cytoscape style rules**
 
 In the `style` array passed to `cytoscape({...})`, append after the existing `edge.gen-2` rule (last position wins, so these override the base node/edge rules):
 
@@ -678,7 +678,7 @@ In the `style` array passed to `cytoscape({...})`, append after the existing `ed
                             { selector: 'edge.focus-up', style: { 'line-color': '#cba6f7', 'target-arrow-color': '#cba6f7', 'width': 3 } }
 ```
 
-- [ ] **Step 9: Wire the Focus controls**
+- [x] **Step 9: Wire the Focus controls**
 
 In the event-wiring block at the bottom (inside the `try`), after the `filterVarsCheckbox` listener, add:
 
@@ -712,7 +712,7 @@ In the event-wiring block at the bottom (inside the `try`), after the `filterVar
 
 Also add `updateFocusUI();` next to the existing `updateExclusionTagsUI();` call at the top of the `try` block, so the controls start in the right state.
 
-- [ ] **Step 10: Reset focus when a new file loads**
+- [x] **Step 10: Reset focus when a new file loads**
 
 In `loadGraphData`, after `activeExclusions = [];`:
 
@@ -740,7 +740,7 @@ Expected:
 - With Isolate off, clicking a node produces the old fade highlight, unchanged. The Total Upstream/Downstream numbers for a given node are identical in both modes.
 - Adding a path exclusion that matches the anchor clears focus and leaves the message "Anchor was filtered out — focus cleared" visible on the canvas.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add app-visualizer.js
