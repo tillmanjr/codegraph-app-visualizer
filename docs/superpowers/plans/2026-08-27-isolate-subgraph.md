@@ -895,7 +895,7 @@ git commit -m "feat: scope search to the full graph or the current subgraph"
 - Consumes: everything above.
 - Produces: nothing.
 
-- [ ] **Step 1: Document the mode in "The explorer UI"**
+- [x] **Step 1: Document the mode in "The explorer UI"**
 
 Add a bullet after the **Show Variables & Constants** bullet:
 
@@ -911,7 +911,7 @@ Add a bullet after the **Show Variables & Constants** bullet:
   If a filter or exclusion removes the current anchor, focus clears and says so.
 ```
 
-- [ ] **Step 2: Document the search scope**
+- [x] **Step 2: Document the search scope**
 
 Replace the existing **Search** bullet with:
 
@@ -922,7 +922,7 @@ Replace the existing **Search** bullet with:
   it reports the match count and waits for Enter, which anchors on the first match.
 ```
 
-- [ ] **Step 3: Update the repo layout and setup blocks**
+- [x] **Step 3: Update the repo layout and setup blocks**
 
 In the repo layout block, add after `app-visualizer.js`:
 
@@ -954,14 +954,14 @@ Reference it under the Isolate Subgraph bullet, following the existing caption s
 ![A graph isolated to one anchor node: the anchor with a thick cream border, pink-bordered descendants below it connected by pink edges, and two mauve-bordered immediate parents connected by mauve edges](docs/images/isolate-subgraph.png)
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npm test`
 Expected: PASS — 11 passing.
 
 Re-read `README.md` and confirm no bullet still claims search always re-anchors, and that the layout block lists both new files.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add README.md docs/images/isolate-subgraph.png
