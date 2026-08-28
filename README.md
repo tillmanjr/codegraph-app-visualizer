@@ -29,6 +29,16 @@ Consortium and the Bader Lab chose to give away.
 Pointing it at a codebase is a small thing next to that. If this tool is useful to you, go and look
 at what Cytoscape is really for: **<https://cytoscape.org>**
 
+## And to CodeGraph
+
+The index this explorer reads comes from
+[**CodeGraph**](https://github.com/colbymchenry/codegraph), which walks a repository and extracts its
+symbols, call edges, and dependencies into a local SQLite knowledge graph across 30+ languages. It
+was built so AI coding agents can ask one question and get back the relevant source along with the
+call paths between it — "fewer tokens, fewer tool calls, 100% local" — but the same graph turns out
+to be exactly what you want for drawing a picture of a codebase. Without `codegraph.db` there is
+nothing here to explore.
+
 ## Requirements
 
 - Node.js 20+ (developed on v24)
