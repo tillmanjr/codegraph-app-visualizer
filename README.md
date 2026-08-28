@@ -1,4 +1,4 @@
-# export-to-cytoscape
+# CodeGraph Explorer
 
 Turns a CodeGraph `codegraph.db` index into a Cytoscape.js JSON graph and serves a small browser
 UI for exploring it.
@@ -11,6 +11,23 @@ Two pieces:
   `cytoscape-graph.json` files with Cytoscape.js.
 
 ![The explorer with a graph loaded: sidebar controls on the left, dagre layout on the right](docs/images/explorer-overview.png)
+
+## A big thank you to Cytoscape
+
+This project is a thin shell around [**Cytoscape.js**](https://js.cytoscape.org/), and it exists at
+all because of the [**Cytoscape**](https://cytoscape.org) community's decades of open source work.
+Every graph on this page is theirs — the layout engines, the hit detection, the styling system, the
+rendering. Our contribution is the part that reads a SQLite file.
+
+That debt is worth stating plainly, because Cytoscape's reach goes far past drawing call graphs. It
+grew up in systems biology, and its open tools have become part of how researchers actually see
+living systems: gene and protein interaction networks, regulatory and signaling pathways, and the
+tangled rewiring that turns an ordinary cell into a rampaging cancer. Work stretching from the
+simplest genomes to the hardest questions in oncology has been done on top of software the Cytoscape
+Consortium and the Bader Lab chose to give away.
+
+Pointing it at a codebase is a small thing next to that. If this tool is useful to you, go and look
+at what Cytoscape is really for: **<https://cytoscape.org>**
 
 ## Requirements
 
@@ -74,7 +91,7 @@ cp node_modules/cytoscape-dagre/dist/cytoscape-dagre.min.js ./cytoscape-dagre.js
    uses the browser's `FileReader` (not `fetch`), the page also works when opened as a `file://`
    URL, though serving over HTTP works fine too.
 
-   ![The explorer on first open: an empty canvas showing a dashed dropzone that reads "Drop an exported Cytoscape JSON here", with a Load Graph File button in the sidebar and zeroed node/edge counts](docs/images/empty-state.png)
+   ![Animated: the explorer on first open — an empty canvas showing a dashed dropzone that reads "Drop an exported Cytoscape JSON here", a Load Graph File button in the sidebar, and zeroed Active Nodes / Active Edges — then a graph file is loaded and the layout appears](docs/images/empty-state.gif)
 
 ## What the exporter does
 
@@ -131,7 +148,7 @@ variable/constant yellow, everything else teal.
 Filtering is what makes a large index readable — hiding variables and excluding a few path
 substrings usually cuts the node count by more than half:
 
-![The sidebar with the variables filter off and several path exclusion tags active, and the resulting smaller graph](docs/images/filtering.png)
+![Animated: the variables filter being switched off and path exclusion tags added one at a time, with the Active Nodes and Active Edges counts dropping and the graph thinning out as each filter takes effect](docs/images/filtering.gif)
 
 ## Repo layout
 
