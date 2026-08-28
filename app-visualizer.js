@@ -25,9 +25,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadedName = document.getElementById('loaded-name');
     const dropzone = document.getElementById('dropzone');
 
+    const focusModeCheckbox = document.getElementById('focus-mode');
+    const focusParentsCheckbox = document.getElementById('focus-parents');
+    const focusParentsLabel = document.getElementById('focus-parents-label');
+    const focusDepthSlider = document.getElementById('focus-depth');
+    const valFocusDepth = document.getElementById('val-focus-depth');
+    const btnFocusBack = document.getElementById('btn-focus-back');
+    const focusAnchorName = document.getElementById('focus-anchor-name');
+    const searchScopeSelect = document.getElementById('search-scope');
+    const searchHint = document.getElementById('search-hint');
+
     let cyInstance = null;
     let rawGraphData = null;
     let activeExclusions = [];
+
+    let focusMode = false;
+    let focusAnchorId = null;
+    let focusHistory = [];
+    let lastClickedNodeId = null;
+    // The most recent filtered (pre-isolate) graph, plus adjacency built from it.
+    // Info-panel counts and full-graph search read from here so they mean the
+    // same thing whether or not the canvas is currently isolated.
+    let lastFiltered = { nodes: [], edges: [], successors: new Map(), predecessors: new Map(), byId: new Map() };
 
     if (typeof cytoscapeDagre !== 'undefined') {
         cytoscape.use(cytoscapeDagre);
@@ -90,6 +109,116 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
+
+    function anchorLabel() {
+        const node = lastFiltered.byId.get(focusAnchorId);
+        return node ? (node.data.label || focusAnchorId) : '— none —';
+    }
+
+    function updateFocusUI() {
+        focusParentsCheckbox.disabled = !focusMode;
+        focusDepthSlider.disabled = !focusMode;
+        focusParentsLabel.classList.toggle('disabled', !focusMode);
+        btnFocusBack.disabled = focusHistory.length === 0;
+        focusAnchorName.innerText = focusAnchorId === null ? '— none —' : anchorLabel();
+        document.body.classList.toggle('focus-active', focusMode);
+
+        const subgraphOption = searchScopeSelect.querySelector('option[value="subgraph"]');
+        const subgraphAvailable = focusMode && focusAnchorId !== null;
+        subgraphOption.disabled = !subgraphAvailable;
+        if (!subgraphAvailable && searchScopeSelect.value === 'subgraph') {
+            searchScopeSelect.value = 'full';
+        }
+    }
+
+    function clearFocus() {
+        focusAnchorId = null;
+        focusHistory = [];
+        updateFocusUI();
+    }
+
+    function applyFocusClasses(directions) {
+        if (!cyInstance) return;
+        cyInstance.elements().removeClass('focus-anchor focus-up focus-down faded gen-1 gen-2');
+        if (!directions) return;
+
+        cyInstance.nodes().forEach(node => {
+            const direction = directions.get(node.id());
+            if (direction === 'anchor') node.addClass('focus-anchor');
+            else if (direction === 'up') node.addClass('focus-up');
+            else if (direction === 'down') node.addClass('focus-down');
+        });
+
+        // An edge is "upstream" when it touches an immediate parent; parents are
+        // the only nodes marked 'up', so this is unambiguous.
+        cyInstance.edges().forEach(edge => {
+            const source = directions.get(edge.data('source'));
+            const target = directions.get(edge.data('target'));
+            edge.addClass(source === 'up' || target === 'up' ? 'focus-up' : 'focus-down');
+        });
+    }
+
+    function setAnchor(nodeId, pushHistory) {
+        if (pushHistory && focusAnchorId !== null && focusAnchorId !== nodeId) {
+            focusHistory.push(focusAnchorId);
+        }
+        focusAnchorId = nodeId;
+        updateFocusUI();
+        renderPipeline(true);
+    }
+
+    // Reachability over the filtered graph, so the counts mean the same thing
+    // whether or not the canvas is currently isolated.
+    function reachableCount(adjacency, startId) {
+        const seen = new Set();
+        const stack = [startId];
+        while (stack.length > 0) {
+            const id = stack.pop();
+            (adjacency.get(id) || []).forEach(nextId => {
+                if (nextId === startId || seen.has(nextId)) return;
+                seen.add(nextId);
+                stack.push(nextId);
+            });
+        }
+        return seen.size;
+    }
+
+    function showNodeInfo(nodeId) {
+        const node = lastFiltered.byId.get(nodeId);
+        if (!node) return;
+        const data = node.data;
+        const totalUpstream = reachableCount(lastFiltered.predecessors, nodeId);
+        const totalDownstream = reachableCount(lastFiltered.successors, nodeId);
+
+        infoBox.innerHTML =
+            '<strong>Name:</strong> ' + data.label + '<br/>' +
+            '<strong>Kind:</strong> <span style="color:var(--accent-color)">' + (data.kind || 'unknown').toUpperCase() + '</span><br/>' +
+            '<strong>Total Upstream (All Paths):</strong> ' + totalUpstream + '<br/>' +
+            '<strong>Total Downstream (All Calls):</strong> ' + totalDownstream + '<br/>' +
+            '<strong>File Location:</strong><br/><code style="color:#a6e3a1; font-size:11px;">' + (data.filePath || 'No path specified') + '</code>';
+    }
+
+    function applyGenerationHighlight(target) {
+        cyInstance.elements().removeClass('gen-1 gen-2').addClass('faded');
+        target.removeClass('faded').addClass('gen-1');
+
+        // Upstream direct (Parent)
+        const parents1 = target.incomers();
+        parents1.removeClass('faded').addClass('gen-1');
+
+        // Upstream depth-2 (Grandparent)
+        const parents2 = parents1.nodes().incomers();
+        parents2.not('.gen-1').removeClass('faded').addClass('gen-2');
+
+        // Downstream direct (Child)
+        const children1 = target.outgoers();
+        children1.removeClass('faded').addClass('gen-1');
+
+        // Downstream depth-2 (Grandchild)
+        const children2 = children1.nodes().outgoers();
+        children2.not('.gen-1').removeClass('faded').addClass('gen-2');
+    }
+
     function renderPipeline(fitView = true) {
         if (!rawGraphData) return;
 
@@ -131,10 +260,45 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return activeNodeIds.has(e.data.source) && activeNodeIds.has(e.data.target);
                 });
 
-                nCount.innerText = filteredNodes.length;
-                eCount.innerText = filteredEdges.length;
+                lastFiltered = { nodes: filteredNodes, edges: filteredEdges, successors: new Map(), predecessors: new Map(), byId: new Map() };
+                filteredNodes.forEach(node => lastFiltered.byId.set(node.data.id, node));
+                filteredEdges.forEach(edge => {
+                    const source = edge.data.source;
+                    const target = edge.data.target;
+                    if (!lastFiltered.successors.has(source)) lastFiltered.successors.set(source, []);
+                    lastFiltered.successors.get(source).push(target);
+                    if (!lastFiltered.predecessors.has(target)) lastFiltered.predecessors.set(target, []);
+                    lastFiltered.predecessors.get(target).push(source);
+                });
 
-                checkLayoutThresholds(filteredNodes.length);
+                let viewNodes = filteredNodes;
+                let viewEdges = filteredEdges;
+                let focusDirections = null;
+                // Held until layoutstop: renderPipeline's own status text and the
+                // layoutstop hide would otherwise overwrite the message instantly.
+                let focusClearedMessage = null;
+
+                if (focusMode && focusAnchorId !== null) {
+                    const subgraph = computeSubgraph(filteredNodes, filteredEdges, focusAnchorId, {
+                        depth: parseInt(focusDepthSlider.value, 10),
+                        includeParents: focusParentsCheckbox.checked
+                    });
+                    if (subgraph.nodes.length === 0) {
+                        // The anchor was filtered out. Ancestors may be gone too,
+                        // so the history goes with it. Isolate stays switched on.
+                        clearFocus();
+                        focusClearedMessage = 'Anchor was filtered out — focus cleared';
+                    } else {
+                        viewNodes = subgraph.nodes;
+                        viewEdges = subgraph.edges;
+                        focusDirections = subgraph.directions;
+                    }
+                }
+
+                nCount.innerText = viewNodes.length;
+                eCount.innerText = viewEdges.length;
+
+                checkLayoutThresholds(viewNodes.length);
 
                 const currentLayout = layoutSelect.value;
                 const rSep = parseInt(slideRank.value, 10);
@@ -145,7 +309,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const layoutConfig = {
                     name: currentLayout,
-                    animate: filteredNodes.length < 400,
+                    animate: viewNodes.length < 400,
                     animationDuration: 300,
                     fit: fitView,
                     padding: 50
@@ -162,12 +326,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     layoutConfig.numIter = 1000;
                 }
 
-                status.innerText = 'Computing coordinates for ' + filteredNodes.length + ' elements...';
+                status.innerText = 'Computing coordinates for ' + viewNodes.length + ' elements...';
 
                 if (!cyInstance) {
                     cyInstance = cytoscape({
                         container: document.getElementById('cy'),
-                        elements: [...filteredNodes, ...filteredEdges],
+                        elements: [...viewNodes, ...viewEdges],
                         userZoomingEnabled: true,
                         userPanningEnabled: true,
                         boxSelectionEnabled: false,
@@ -184,59 +348,59 @@ document.addEventListener('DOMContentLoaded', async () => {
                             { selector: 'node.gen-1', style: { 'background-color': '#f38ba8', 'border-width': 4, 'border-color': '#f5e0dc', 'scale': 1.20, 'opacity': 1.0 } },
                             { selector: 'edge.gen-1', style: { 'line-color': '#f38ba8', 'target-arrow-color': '#f38ba8', 'width': 5.0, 'opacity': 1.0 } },
                             { selector: 'node.gen-2', style: { 'background-color': '#f38ba8', 'border-width': 2, 'border-color': '#f38ba8', 'scale': 1.05, 'opacity': 0.45 } },
-                            { selector: 'edge.gen-2', style: { 'line-color': '#f38ba8', 'target-arrow-color': '#f38ba8', 'width': 2.5, 'opacity': 0.40 } }
+                            { selector: 'edge.gen-2', style: { 'line-color': '#f38ba8', 'target-arrow-color': '#f38ba8', 'width': 2.5, 'opacity': 0.40 } },
+
+                            // Isolate Subgraph: direction lives on borders and edges,
+                            // so node fills keep their kind colors.
+                            { selector: 'node.focus-down', style: { 'border-width': 3, 'border-color': '#f38ba8' } },
+                            { selector: 'node.focus-up', style: { 'border-width': 3, 'border-color': '#cba6f7' } },
+                            { selector: 'node.focus-anchor', style: { 'border-width': 4, 'border-color': '#f5e0dc', 'outline-width': 4, 'outline-color': '#f5e0dc', 'outline-opacity': 0.5, 'outline-offset': 3, 'z-index': 10 } },
+                            { selector: 'edge.focus-down', style: { 'line-color': '#f38ba8', 'target-arrow-color': '#f38ba8', 'width': 3 } },
+                            { selector: 'edge.focus-up', style: { 'line-color': '#cba6f7', 'target-arrow-color': '#cba6f7', 'width': 3 } }
                         ],
                         layout: layoutConfig
                     });
                     cyInstance.on('tap', (evt) => {
                         const target = evt.target;
                         if (target === cyInstance) {
-                            cyInstance.elements().removeClass('faded gen-1 gen-2');
+                            // In focus mode the focus-* classes describe the view
+                            // itself, not a selection, so they must survive.
+                            if (!focusMode) cyInstance.elements().removeClass('faded gen-1 gen-2');
                             infoBox.innerHTML = "Click a node to inspect dependencies...";
                             return;
                         }
+                        if (!target.isNode()) return;
 
-                        if (target.isNode()) {
-                            cyInstance.elements().removeClass('gen-1 gen-2').addClass('faded');
-                            target.removeClass('faded').addClass('gen-1');
+                        const nodeId = target.id();
+                        lastClickedNodeId = nodeId;
+                        // Info first: re-anchoring rebuilds the elements and makes
+                        // `target` stale.
+                        showNodeInfo(nodeId);
 
-                            // Upstream direct (Parent)
-                            const parents1 = target.incomers();
-                            parents1.removeClass('faded').addClass('gen-1');
-
-                            // Upstream depth-2 (Grandparent)
-                            const parents2 = parents1.nodes().incomers();
-                            parents2.not('.gen-1').removeClass('faded').addClass('gen-2');
-
-                            // Downstream direct (Child)
-                            const children1 = target.outgoers();
-                            children1.removeClass('faded').addClass('gen-1');
-
-                            // Downstream depth-2 (Grandchild)
-                            const children2 = children1.nodes().outgoers();
-                            children2.not('.gen-1').removeClass('faded').addClass('gen-2');
-
-                            const totalUpstream = target.predecessors().nodes().length;
-                            const totalDownstream = target.successors().nodes().length;
-
-                            infoBox.innerHTML =
-                                '<strong>Name:</strong> ' + target.data('label') + '<br/>' +
-                                '<strong>Kind:</strong> <span style="color:var(--accent-color)">' + (target.data('kind') || 'unknown').toUpperCase() + '</span><br/>' +
-                                '<strong>Total Upstream (All Paths):</strong> ' + totalUpstream + '<br/>' +
-                                '<strong>Total Downstream (All Calls):</strong> ' + totalDownstream + '<br/>' +
-                                '<strong>File Location:</strong><br/><code style="color:#a6e3a1; font-size:11px;">' + (target.data('filePath') || 'No path specified') + '</code>';
+                        if (focusMode) {
+                            setAnchor(nodeId, true);
+                        } else {
+                            applyGenerationHighlight(target);
                         }
                     });
                 } else {
-                    cyInstance.json({ elements: [...filteredNodes, ...filteredEdges] });
+                    cyInstance.json({ elements: [...viewNodes, ...viewEdges] });
                     cyInstance.layout(layoutConfig).run();
                 }
+
+                applyFocusClasses(focusDirections);
 
                 cyInstance.one('layoutstop', () => {
                     if (!fitView && currentZoom !== null && currentPan !== null) {
                         cyInstance.viewport({ zoom: currentZoom, pan: currentPan });
                     }
-                    status.style.display = 'none';
+                    if (focusClearedMessage) {
+                        status.style.display = 'block';
+                        status.style.color = '#f38ba8';
+                        status.innerText = focusClearedMessage;
+                    } else {
+                        status.style.display = 'none';
+                    }
                 });
             });
         });
@@ -255,6 +419,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         rawGraphData = parsed;
         activeExclusions = [];
+        focusMode = false;
+        focusModeCheckbox.checked = false;
+        lastClickedNodeId = null;
+        clearFocus();
         updateExclusionTagsUI();
         loadedName.innerText = fileName;
         dropzone.style.display = 'none';
@@ -286,6 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         status.style.display = 'none';
         updateExclusionTagsUI();
+        updateFocusUI();
 
         btnLoad.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
@@ -309,6 +478,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         filterVarsCheckbox.addEventListener('change', () => renderPipeline(false));
+
+        focusModeCheckbox.addEventListener('change', () => {
+            focusMode = focusModeCheckbox.checked;
+            if (focusMode) {
+                if (lastClickedNodeId !== null && lastFiltered.byId.has(lastClickedNodeId)) {
+                    setAnchor(lastClickedNodeId, false);
+                    return;
+                }
+                updateFocusUI();
+                status.style.display = 'block';
+                status.style.color = '#a6e3a1';
+                status.innerText = 'Click a node to focus';
+                return;
+            }
+            clearFocus();
+            renderPipeline(true);
+        });
+
+        focusParentsCheckbox.addEventListener('change', () => {
+            if (focusMode && focusAnchorId !== null) renderPipeline(true);
+        });
+
+        focusDepthSlider.addEventListener('input', (e) => { valFocusDepth.innerText = e.target.value; });
+        focusDepthSlider.addEventListener('change', () => {
+            if (focusMode && focusAnchorId !== null) renderPipeline(true);
+        });
+
+        btnFocusBack.addEventListener('click', () => {
+            // Ancestors can disappear when filters change; skip the stale ones.
+            while (focusHistory.length > 0) {
+                const previousId = focusHistory.pop();
+                if (lastFiltered.byId.has(previousId)) {
+                    focusAnchorId = previousId;
+                    updateFocusUI();
+                    showNodeInfo(previousId);
+                    renderPipeline(true);
+                    return;
+                }
+            }
+            updateFocusUI();
+        });
 
         btnAddExclude.addEventListener('click', () => {
             const val = excludeInput.value.trim().toLowerCase();
@@ -357,18 +567,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        function centerOnCyNode(node) {
+            cyInstance.animate({ center: { eles: node } }, { duration: 300 });
+            showNodeInfo(node.id());
+            lastClickedNodeId = node.id();
+        }
+
         searchInput.addEventListener('input', (e) => {
             if (!cyInstance) return;
             const query = e.target.value.toLowerCase().trim();
-            cyInstance.elements().removeClass('faded gen-1 gen-2');
+            searchHint.innerText = '';
 
-            if (query.length > 1) {
-                const matches = cyInstance.nodes().filter(node => node.data('label').toLowerCase().includes(query));
-                if (matches.length > 0) {
-                    cyInstance.animate({ center: { eles: matches.first() } }, { duration: 300 });
-                    matches.first().trigger('tap');
-                }
+            if (!focusMode) {
+                cyInstance.elements().removeClass('faded gen-1 gen-2');
             }
+            if (query.length <= 1) return;
+
+            // Isolated + Full Graph scope: typing must not re-anchor, or every
+            // keystroke would push history and re-run a layout. Enter commits.
+            if (focusMode && searchScopeSelect.value === 'full') {
+                const matches = lastFiltered.nodes.filter(node =>
+                    (node.data.label || '').toLowerCase().includes(query));
+                searchHint.innerText = matches.length === 0
+                    ? 'No matches'
+                    : matches.length + ' match' + (matches.length === 1 ? '' : 'es') + ' — Enter to focus';
+                return;
+            }
+
+            // Otherwise search whatever is on the canvas: the full filtered graph
+            // when isolate is off, the subgraph when scope is Current Subgraph.
+            const matches = cyInstance.nodes().filter(node =>
+                node.data('label').toLowerCase().includes(query));
+            if (matches.length === 0) {
+                searchHint.innerText = 'No matches';
+                return;
+            }
+            const first = matches.first();
+            centerOnCyNode(first);
+            if (!focusMode) applyGenerationHighlight(first);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            if (!focusMode || searchScopeSelect.value !== 'full') return;
+            const query = searchInput.value.toLowerCase().trim();
+            if (query.length <= 1) return;
+
+            const match = lastFiltered.nodes.find(node =>
+                (node.data.label || '').toLowerCase().includes(query));
+            if (!match) return;
+            lastClickedNodeId = match.data.id;
+            showNodeInfo(match.data.id);
+            setAnchor(match.data.id, true);
+            searchHint.innerText = '';
+        });
+
+        searchScopeSelect.addEventListener('change', () => {
+            searchHint.innerText = '';
+            searchInput.dispatchEvent(new Event('input'));
         });
 
     } catch (e) {
